@@ -13,7 +13,7 @@ def has_allowed_extension(file: Path, allowed_extensions: Optional[List[str]]) -
     if allowed_extensions is None:
         allowed_extensions = []
     extension = file.suffix.lower()
-    for allowed_extension in allowed_extensions:
-        if extension == allowed_extension:
-            return True
-    return False
+    return any(
+        extension == allowed_extension
+        for allowed_extension in allowed_extensions
+    )

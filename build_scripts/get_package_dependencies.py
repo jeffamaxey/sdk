@@ -9,9 +9,7 @@ default_dependencies = {"pyproject.toml", "DESCRIPTION.md"}
 
 def get_path_from_package(package: Dict[str, str]) -> str:
     include = package["include"]
-    dir = package.get("from")
-
-    if dir:
+    if dir := package.get("from"):
         return f"{dir}/{include}/**"
     else:
         return f"{include}/**"

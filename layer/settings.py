@@ -112,9 +112,7 @@ class LayerSettings:
             self._fabric = Fabric(f)  # type:ignore # pylint: disable=E1120
             return
         raise ValueError(
-            'Fabric setting "{}" is not valid. You can check valid values in Fabric enum definition.'.format(
-                f
-            )
+            f'Fabric setting "{f}" is not valid. You can check valid values in Fabric enum definition.'
         )
 
     def set_pip_requirements_file(self, file: Optional[str]) -> None:

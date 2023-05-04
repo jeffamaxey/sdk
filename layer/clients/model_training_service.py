@@ -90,10 +90,10 @@ class ModelTrainingClient:
         train_response = self._service.StartModelTraining(request)
 
         def is_train_completed(status: PBModelTrainStatus) -> bool:
-            return (
-                status.train_status == PBModelTrainStatus.TRAIN_STATUS_SUCCESSFUL
-                or status.train_status == PBModelTrainStatus.TRAIN_STATUS_FAILED
-            )
+            return status.train_status in [
+                PBModelTrainStatus.TRAIN_STATUS_SUCCESSFUL,
+                PBModelTrainStatus.TRAIN_STATUS_FAILED,
+            ]
 
         polling.poll(
             lambda: self._get_model_train_status(train_response.id.value),

@@ -210,7 +210,7 @@ def test_given_long_readme_exists_when_set_up_project_gets_and_sets_project_read
     # given
     readme_path = tmp_path / "ReAdmE.Md"
 
-    actual_readme = "".join("." for i in range(30_000))
+    actual_readme = "".join("." for _ in range(30_000))
     expected_readme = actual_readme[:25_000]
     with open(readme_path, "w") as f:
         f.write(actual_readme)

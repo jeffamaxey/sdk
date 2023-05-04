@@ -199,7 +199,7 @@ class ResourceManager:
         resource_paths = self._client.data_catalog.get_resource_paths(
             project_full_name, function_name
         )
-        download_root = os.getcwd() if target_dir == "" else target_dir
+        download_root = target_dir if target_dir else os.getcwd()
         async with aiohttp.ClientSession(raise_for_status=True) as session:
             download_tasks = [
                 self._download_resource(download_url, download_root, session)

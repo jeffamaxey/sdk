@@ -37,9 +37,7 @@ class ResourceTransferState:
             if look_at >= 0 and look_at in self._timestamp_to_bytes_sent:
                 valid_seconds += 1
                 bytes_transferred += self._timestamp_to_bytes_sent[look_at]
-        if valid_seconds == 0:
-            return 0
-        return round(bytes_transferred / valid_seconds)
+        return 0 if valid_seconds == 0 else round(bytes_transferred / valid_seconds)
 
     def get_eta_seconds(self) -> int:
         bandwidth = self.get_bandwidth_in_previous_seconds()
@@ -113,9 +111,7 @@ class DatasetTransferState:
             if look_at >= 0 and look_at in self._timestamp_to_rows_sent:
                 valid_seconds += 1
                 rows_transferred += self._timestamp_to_rows_sent[look_at]
-        if valid_seconds == 0:
-            return 0
-        return round(rows_transferred / valid_seconds)
+        return 0 if valid_seconds == 0 else round(rows_transferred / valid_seconds)
 
     def get_eta_seconds(self) -> int:
         rows_per_sec = self._get_rows_per_sec()

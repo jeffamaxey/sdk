@@ -165,7 +165,4 @@ class FunctionDefinition:
         return self.function_home_dir / self.environment
 
     def get_fabric(self, is_local: bool) -> str:
-        if is_local:
-            return Fabric.F_LOCAL.value
-        else:
-            return self.fabric.value
+        return Fabric.F_LOCAL.value if is_local else self.fabric.value

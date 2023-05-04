@@ -222,7 +222,7 @@ class TestAssetPath:
         base_url = URL("https://layer.ai")
 
         assert composite.path() == expected_path
-        assert str(composite.url(base_url)) == str(base_url) + "/" + expected_url_path
+        assert str(composite.url(base_url)) == f"{str(base_url)}/{expected_url_path}"
 
     def test_composite_with_project_full_name(self) -> None:
         src = AssetPath(

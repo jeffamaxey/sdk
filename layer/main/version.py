@@ -24,7 +24,7 @@ def get_version() -> str:
 
     if version_match is None:
         raise RuntimeError("Failed to parse version")
-    return version_match.group(1)
+    return version_match[1]
 
 
 def check_latest_version() -> None:

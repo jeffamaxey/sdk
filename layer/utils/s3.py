@@ -26,13 +26,11 @@ class S3Util:
         s3_kwargs = {"endpoint_url": endpoint_url and str(endpoint_url)}
 
         if credentials:
-            s3_kwargs.update(
-                {
-                    "aws_access_key_id": credentials.access_key_id,
-                    "aws_secret_access_key": credentials.secret_access_key,
-                    "aws_session_token": credentials.session_token,
-                }
-            )
+            s3_kwargs |= {
+                "aws_access_key_id": credentials.access_key_id,
+                "aws_secret_access_key": credentials.secret_access_key,
+                "aws_session_token": credentials.session_token,
+            }
         s3 = boto3.resource("s3", **s3_kwargs)  # type: ignore
         bucket = s3.Bucket(s3_path.bucket)
 
@@ -80,13 +78,11 @@ class S3Util:
         s3_kwargs = {"endpoint_url": endpoint_url and str(endpoint_url)}
 
         if credentials:
-            s3_kwargs.update(
-                {
-                    "aws_access_key_id": credentials.access_key_id,
-                    "aws_secret_access_key": credentials.secret_access_key,
-                    "aws_session_token": credentials.session_token,
-                }
-            )
+            s3_kwargs |= {
+                "aws_access_key_id": credentials.access_key_id,
+                "aws_secret_access_key": credentials.secret_access_key,
+                "aws_session_token": credentials.session_token,
+            }
 
         s3_client = boto3.client("s3", **s3_kwargs)  # type: ignore
         dest_path = s3_path.key
@@ -140,13 +136,11 @@ class S3Util:
         s3_kwargs = {"endpoint_url": endpoint_url and str(endpoint_url)}
 
         if credentials:
-            s3_kwargs.update(
-                {
-                    "aws_access_key_id": credentials.access_key_id,
-                    "aws_secret_access_key": credentials.secret_access_key,
-                    "aws_session_token": credentials.session_token,
-                }
-            )
+            s3_kwargs |= {
+                "aws_access_key_id": credentials.access_key_id,
+                "aws_secret_access_key": credentials.secret_access_key,
+                "aws_session_token": credentials.session_token,
+            }
 
         s3_client = boto3.client("s3", **s3_kwargs)  # type: ignore
         s3_client.put_object(Bucket=bucket, Body="", Key=key)

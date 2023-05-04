@@ -81,7 +81,7 @@ def _cleanup_test_session_config() -> None:
 
 
 def _increment_session_count() -> int:
-    with FileLock(str(TEST_SESSION_CONFIG_TMP_PATH) + ".lock"):
+    with FileLock(f"{str(TEST_SESSION_CONFIG_TMP_PATH)}.lock"):
         config = configparser.ConfigParser()
         config.read(TEST_SESSION_CONFIG_TMP_PATH)
         current_counter = 0
@@ -102,11 +102,10 @@ def _decrement_session_count() -> int:
     """
     Expects to be called after at least one increment
     """
-    with FileLock(str(TEST_SESSION_CONFIG_TMP_PATH) + ".lock"):
+    with FileLock(f"{str(TEST_SESSION_CONFIG_TMP_PATH)}.lock"):
         config = configparser.ConfigParser()
         config.read(TEST_SESSION_CONFIG_TMP_PATH)
-        current_counter = int(config.get("PYTEST_SESSIONS", "count"))
-        current_counter -= 1
+        current_counter = int(config.get("PYTEST_SESSIONS", "count")) - 1
         config["PYTEST_SESSIONS"]["count"] = str(current_counter)
 
         with open(TEST_SESSION_CONFIG_TMP_PATH, "w") as configfile:
@@ -116,7 +115,7 @@ def _decrement_session_count() -> int:
 
 
 def _write_organization_account_to_test_session_config(org_account):
-    with FileLock(str(TEST_SESSION_CONFIG_TMP_PATH) + ".lock"):
+    with FileLock(f"{str(TEST_SESSION_CONFIG_TMP_PATH)}.lock"):
         with open(TEST_SESSION_CONFIG_TMP_PATH, "a") as f:
             f.write(
                 f"""
@@ -137,7 +136,7 @@ def _read_organization_account_from_test_session_config() -> Optional[Account]:
     Returns None if there is no organization account for this session.
     One reason being that it got deleted already by a fixture teardown.
     """
-    with FileLock(str(TEST_SESSION_CONFIG_TMP_PATH) + ".lock"):
+    with FileLock(f"{str(TEST_SESSION_CONFIG_TMP_PATH)}.lock"):
         config = configparser.ConfigParser()
         if (
             not config.read(TEST_SESSION_CONFIG_TMP_PATH)
@@ -274,10 +273,7 @@ def pseudo_random_account_name() -> Tuple[str, str]:
 
 
 def truncate(src: str, max_length: int) -> str:
-    if max_length > len(src):
-        return src
-
-    return src[:max_length]
+    return src if max_length > len(src) else src[:max_length]
 
 
 def _extract_module_and_test_name(fixture_request: Any) -> Tuple[str, str]:
@@ -389,8 +385,7 @@ def initialized_project(client: LayerClient, request: Any) -> Iterator[Project]:
 
 
 def _cleanup_project(client: LayerClient, project: Project):
-    project = client.project_service_client.get_project(project.full_name)
-    if project:
+    if project := client.project_service_client.get_project(project.full_name):
         print(f"project {project.name} exists, will remove")
         client.project_service_client.remove_project(project.id)
 

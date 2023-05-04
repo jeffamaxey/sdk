@@ -54,8 +54,7 @@ class AssetPath:
         groups = result.groups()
         optional_project = groups[3] if groups[3] else groups[1]
         optional_org = groups[1] if groups[3] else None
-        maybe_asset_type = groups[4]
-        if maybe_asset_type:
+        if maybe_asset_type := groups[4]:
             asset_type = AssetType(maybe_asset_type)
         elif expected_asset_type:
             asset_type = expected_asset_type
@@ -188,13 +187,14 @@ class BaseAsset(metaclass=ABCMeta):
         self._description = description
 
     def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, BaseAsset):
-            return False
-
         return (
-            self._path == other._path
-            and self._id == other._id
-            and self._dependencies == other._dependencies
+            (
+                self._path == other._path
+                and self._id == other._id
+                and self._dependencies == other._dependencies
+            )
+            if isinstance(other, BaseAsset)
+            else False
         )
 
     def __str__(self) -> str:

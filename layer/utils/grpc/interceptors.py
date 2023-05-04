@@ -56,12 +56,14 @@ class GRPCErrorClientInterceptor(grpc.UnaryUnaryClientInterceptor):  # type: ign
         error: grpc.RpcError,
     ) -> Union[LayerClientException, grpc.RpcError]:
         error_details = str(error.details())
-        request_id = ""
-        for metadata in error.trailing_metadata():
-            if metadata.key == "x-request-id":
-                request_id = str(metadata.value)
-                break
-
+        request_id = next(
+            (
+                str(metadata.value)
+                for metadata in error.trailing_metadata()
+                if metadata.key == "x-request-id"
+            ),
+            "",
+        )
         if error.code() is grpc.StatusCode.DEADLINE_EXCEEDED:
             return LayerClientTimeoutException(
                 error_details, error.code(), request_id=request_id
@@ -186,14 +188,14 @@ class LogRpcCallsInterceptor(grpc.UnaryUnaryClientInterceptor):  # type: ignore
 
     @staticmethod
     def _obfuscate_dict_values(raw: Dict[str, Any]) -> Dict[str, Any]:
-        out = {}
-        for k, v in raw.items():
-            out[k] = (
+        return {
+            k: (
                 LogRpcCallsInterceptor._obfuscate_dict_values(v)
                 if isinstance(v, dict)
                 else _OBFUSCATED_VALUE
             )
-        return out
+            for k, v in raw.items()
+        }
 
     def _add_exception_to_log_entry(
         self,
@@ -275,10 +277,7 @@ class RequestIdInterceptor(grpc.UnaryUnaryClientInterceptor):  # type: ignore
         metadata: List[Tuple[str, str]] = (
             client_call_details.metadata if client_call_details.metadata else []  # type: ignore
         )
-        if self._request_id is not None:
-            request_id = self._request_id
-        else:
-            request_id = uuid.uuid4()
+        request_id = self._request_id if self._request_id is not None else uuid.uuid4()
         metadata.append(("x-request-id", str(request_id)))
         client_call_details = client_call_details._replace(metadata=metadata)  # type: ignore
         return continuation(client_call_details, request)

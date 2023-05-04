@@ -223,11 +223,14 @@ class TestProjectRun:
 
 
 def _get_request_id_from(client_call_details: grpc.ClientCallDetails) -> Optional[str]:
-    for pair in client_call_details.metadata:
-        if pair[0] == "x-request-id":
-            return pair[1]
-
-    return None
+    return next(
+        (
+            pair[1]
+            for pair in client_call_details.metadata
+            if pair[0] == "x-request-id"
+        ),
+        None,
+    )
 
 
 def _mock_response(return_value: Any) -> MagicMock:
@@ -237,10 +240,9 @@ def _mock_response(return_value: Any) -> MagicMock:
 
 
 def _client_call_details(method: str) -> grpc.ClientCallDetails:
-    client_call_details = new_client_call_details(
+    return new_client_call_details(
         method=method,
         metadata=[
             ("Authorization", f"Bearer {str(uuid.uuid4())}"),
         ],
     )
-    return client_call_details

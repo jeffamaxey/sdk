@@ -447,14 +447,13 @@ def _client_call_details_with_request_id_and_auth_metadata(
 ) -> grpc.ClientCallDetails:
     if request_id is None:
         request_id = uuid.uuid4()
-    client_call_details = new_client_call_details(
+    return new_client_call_details(
         method=method,
         metadata=[
             ("x-request-id", str(request_id)),
             ("Authorization", f"Bearer {str(uuid.uuid4())}"),
         ],
     )
-    return client_call_details
 
 
 def _intercept_call_for_method(

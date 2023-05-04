@@ -117,14 +117,14 @@ class DatasetClient:
         for endpoint in flight_info.endpoints:
             ticket = PartitionTicket()
             ticket.ParseFromString(endpoint.ticket.ticket)
-            for location in endpoint.locations:
-                partitions_metadata.append(
-                    PartitionMetadata(
-                        location=location.uri.decode("utf-8"),
-                        format=ticket.format,
-                        checksum=ticket.checksum,
-                    )
+            partitions_metadata.extend(
+                PartitionMetadata(
+                    location=location.uri.decode("utf-8"),
+                    format=ticket.format,
+                    checksum=ticket.checksum,
                 )
+                for location in endpoint.locations
+            )
         return partitions_metadata
 
     @_dataset_exception_handler

@@ -185,10 +185,10 @@ class AssetColumn(ProgressColumn):
             pulse = True  # Pulsing bar as we currently cannot closely track the downloading of a dataset
 
         assert task.total is not None
-        if (
-            asset.status == AssetTrackerStatus.TRAINING
-            or asset.status == AssetTrackerStatus.BUILDING
-        ):
+        if asset.status in [
+            AssetTrackerStatus.TRAINING,
+            AssetTrackerStatus.BUILDING,
+        ]:
             fraction = round(task.total * 0.05)
             task.completed = min(
                 (task.completed + fraction) % task.total, task.total - 1
@@ -291,15 +291,15 @@ class AssetColumn(ProgressColumn):
                 )
             else:
                 delta = "-:--:--"
-        elif (
-            asset.status == AssetTrackerStatus.PENDING
-            or asset.status == AssetTrackerStatus.ASSET_FROM_CACHE
-        ):
+        elif asset.status in [
+            AssetTrackerStatus.PENDING,
+            AssetTrackerStatus.ASSET_FROM_CACHE,
+        ]:
             delta = "-:--:--"
-        elif (
-            asset.status == AssetTrackerStatus.TRAINING
-            or asset.status == AssetTrackerStatus.BUILDING
-        ):
+        elif asset.status in [
+            AssetTrackerStatus.TRAINING,
+            AssetTrackerStatus.BUILDING,
+        ]:
             delta = timedelta(seconds=self._get_elapsed_time_s(task))
         return str(delta)
 
@@ -343,10 +343,10 @@ class AssetColumn(ProgressColumn):
 
     def _render_description(self, task: Task) -> Text:
         asset = self._get_asset(task)
-        if (
-            asset.status == AssetTrackerStatus.RESOURCE_UPLOADING
-            or asset.status == AssetTrackerStatus.RESULT_UPLOADING
-        ):
+        if asset.status in [
+            AssetTrackerStatus.RESOURCE_UPLOADING,
+            AssetTrackerStatus.RESULT_UPLOADING,
+        ]:
             text = "uploading"
         elif asset.status == AssetTrackerStatus.ASSET_DOWNLOADING:
             text = "downloading"
@@ -358,11 +358,11 @@ class AssetColumn(ProgressColumn):
             text = "done"
         else:
             text = task.description
-        if (
-            asset.status == AssetTrackerStatus.ASSET_LOADED
-            or asset.status == AssetTrackerStatus.DONE
-            or asset.status == AssetTrackerStatus.ERROR
-        ):
+        if asset.status in [
+            AssetTrackerStatus.ASSET_LOADED,
+            AssetTrackerStatus.DONE,
+            AssetTrackerStatus.ERROR,
+        ]:
             style = self._status_style_map[asset.status]
         else:
             style = ProgressStyle.GRAY

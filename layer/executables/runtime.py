@@ -84,7 +84,7 @@ def _get_local_executable_path(executable_path: ExecutablePath) -> Path:
         return Path(executable_path)
     if uri.scheme == "file":
         return Path(uri.path)
-    elif uri.scheme == "http" or uri.scheme == "https":
+    elif uri.scheme in ["http", "https"]:
         local_path, _ = request.urlretrieve(executable_path)  # nosec
         return Path(local_path)
     else:

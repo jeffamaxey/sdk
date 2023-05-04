@@ -13,10 +13,6 @@ from layer.config import ClientConfig
 from layer.utils.grpc.channel import get_grpc_channel
 
 
-if TYPE_CHECKING:
-    pass
-
-
 class UserLogsClient:
     _service: UserLogsAPIStub
 

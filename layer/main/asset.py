@@ -64,9 +64,7 @@ def get_dataset(name: str, no_cache: bool = False) -> Dataset:
     def fetch_dataset() -> "pandas.DataFrame":
         context = get_active_context()
         with LayerClient(config.client, logger).init() as client:
-            within_run = (
-                True if context else False
-            )  # if layer.get_dataset is called within an @dataset decorated func or not
+            within_run = bool(context)
             callback = lambda: client.data_catalog.fetch_dataset(  # noqa: E731
                 asset_path, no_cache=no_cache
             )
@@ -156,9 +154,7 @@ def get_model(name: str, no_cache: bool = False) -> Model:
     context = get_active_context()
 
     with LayerClient(config.client, logger).init() as client:
-        within_run = (
-            True if context else False
-        )  # if layer.get_model is called within a @model decorated func of not
+        within_run = bool(context)
         maybe_logged_data_destination = (
             context.logged_data_destination() if context else None
         )
@@ -320,12 +316,12 @@ def save_model(model: Any) -> None:
         my_model = train()
         layer.save_model(my_model)
     """
-    active_context = get_active_context()
-    if not active_context:
+    if active_context := get_active_context():
+        active_context.save_model(model)
+    else:
         raise RuntimeError(
             "Saving model only allowed inside functions decorated with @model"
         )
-    active_context.save_model(model)
 
 
 @sdk_function
@@ -342,9 +338,9 @@ def save_dataset(dataset: "pandas.DataFrame") -> None:
         my_dataset = build()
         layer.save_dataset(my_dataset)
     """
-    active_context = get_active_context()
-    if not active_context:
+    if active_context := get_active_context():
+        active_context.save_dataset(dataset)
+    else:
         raise RuntimeError(
             "Saving dataset only allowed inside functions decorated with @dataset"
         )
-    active_context.save_dataset(dataset)

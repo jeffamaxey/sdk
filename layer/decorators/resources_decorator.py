@@ -66,13 +66,17 @@ def resources(path: str, *paths: str) -> Callable[..., Any]:
 
 
 def _resources_wrapper(path: str, *paths: str) -> Any:
+
+
+
     class ResourcesFunctionWrapper(LayerFunctionWrapper, ABC):
         def __init__(self, wrapped: Any, wrapper: Any, enabled: Any) -> None:
             super().__init__(wrapped, wrapper, enabled)
 
-            _paths: List[ResourcePath] = []
-            for _path in [path, *paths]:
-                _paths.append(ResourcePath(path=_path))
+            _paths: List[ResourcePath] = [
+                ResourcePath(path=_path) for _path in [path, *paths]
+            ]
             self.layer.set_resource_paths(_paths)
+
 
     return ResourcesFunctionWrapper

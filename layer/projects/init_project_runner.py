@@ -40,8 +40,7 @@ class InitProjectRunner:
         )
 
     def _ensure_user_logged_in(self) -> Any:
-        login_config = asyncio_run_in_thread(self._config_manager.refresh())
-        return login_config
+        return asyncio_run_in_thread(self._config_manager.refresh())
 
     def _update_readme(
         self, project_full_name: ProjectFullName, layer_client: LayerClient
@@ -52,8 +51,7 @@ class InitProjectRunner:
             readme_discover_path = "./"
         project_root_path = Path(os.path.relpath(readme_discover_path))
 
-        readme_contents = ProjectLoader.load_project_readme(project_root_path)
-        if readme_contents:
+        if readme_contents := ProjectLoader.load_project_readme(project_root_path):
             layer_client.project_service_client.update_project_readme(
                 project_full_name=project_full_name,
                 readme=readme_contents,

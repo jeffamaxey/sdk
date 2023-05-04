@@ -37,10 +37,9 @@ class S3Config:
 
 def _default_logs_file_path() -> Path:
     local_now = datetime.now().strftime("%Y%m%dT%H%M%S")
-    logs_file_path = Path.joinpath(
+    return Path.joinpath(
         DEFAULT_LOGS_DIR, f"{local_now}-session-{UserSessionId()}.log"
     )
-    return logs_file_path
 
 
 @dataclass(frozen=True)
@@ -73,8 +72,7 @@ class ClientConfig:
             map(uuid.UUID, decoded["https://layer.co/account_permissions"])
         )
         personal_acc_id = self.personal_account_id()
-        result = list(filter(lambda _id: _id != personal_acc_id, all_account_ids))
-        return result
+        return list(filter(lambda _id: _id != personal_acc_id, all_account_ids))
 
 
 @dataclass(frozen=True)
@@ -170,9 +168,7 @@ def get_config(name: str, record: Dict[str, Any]) -> Any:
 
 
 def get_config_or_default(name: str, default_val: Any, record: Dict[str, Any]) -> Any:
-    if name not in record:
-        return default_val
-    return record[name]
+    return default_val if name not in record else record[name]
 
 
 @dataclass(frozen=True)
@@ -194,19 +190,21 @@ class Config:
 class ConfigRecord:
     @classmethod
     def from_auth(cls, config: AuthConfig) -> Dict[str, Any]:
-        if not config.is_enabled:
-            return {}
-        return {
-            "auth_url": str(config.auth_url),
-            "token_url": str(config.token_url),
-            "logout_url": str(config.logout_url),
-            "client_id": config.client_id,
-            "audience": config.audience,
-            "headless_callback_url": str(config.headless_callback_url),
-            "callback_urls": [str(url) for url in config.callback_urls],
-            "success_redirect_url": str(config.success_redirect_url),
-            "failure_redirect_url": str(config.failure_redirect_url),
-        }
+        return (
+            {
+                "auth_url": str(config.auth_url),
+                "token_url": str(config.token_url),
+                "logout_url": str(config.logout_url),
+                "client_id": config.client_id,
+                "audience": config.audience,
+                "headless_callback_url": str(config.headless_callback_url),
+                "callback_urls": [str(url) for url in config.callback_urls],
+                "success_redirect_url": str(config.success_redirect_url),
+                "failure_redirect_url": str(config.failure_redirect_url),
+            }
+            if config.is_enabled
+            else {}
+        )
 
     @classmethod
     def to_auth(cls, record: Dict[str, Any]) -> AuthConfig:
@@ -241,11 +239,13 @@ class ConfigRecord:
 
     @classmethod
     def to_credentials(cls, record: Dict[str, Any]) -> Credentials:
-        if not record:
-            return Credentials.create_empty()
-        return Credentials(
-            access_token=record["access_token"],
-            refresh_token=record["refresh_token"],
+        return (
+            Credentials(
+                access_token=record["access_token"],
+                refresh_token=record["refresh_token"],
+            )
+            if record
+            else Credentials.create_empty()
         )
 
     @classmethod

@@ -73,6 +73,6 @@ def show_pipeline_run_logs(
             printer(formatted)
         prev_token = curr_token
         curr_token = next_token
-        if prev_token == curr_token and follow is False:
+        if prev_token == curr_token and not follow:
             break
         time.sleep(polling_interval_sec)

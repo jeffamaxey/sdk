@@ -114,20 +114,19 @@ class Video:
         self.fps = fps
 
     def get_video(self) -> Path:
-        if "torch" in get_base_module_list(self.video):
-            try:
-                import torch
-
-                assert isinstance(self.video, torch.Tensor)
-
-                return Video._convert_to_video_path(self.video, self.fps)
-            except ImportError:
-                raise Exception(
-                    "You need torch & torchvision installed to log torch.Tensor videos. Install with: `pip install torch torchvision`"
-                )
-        else:
+        if "torch" not in get_base_module_list(self.video):
             raise Exception(
                 "Unsupported video type! Supported video types are: torch.Tensor"
+            )
+        try:
+            import torch
+
+            assert isinstance(self.video, torch.Tensor)
+
+            return Video._convert_to_video_path(self.video, self.fps)
+        except ImportError:
+            raise Exception(
+                "You need torch & torchvision installed to log torch.Tensor videos. Install with: `pip install torch torchvision`"
             )
 
     # Inspired from https://github.com/pytorch/pytorch/blob/ed0091f8db1265449f13e2bdd1647bf873bd1fea/torch/utils/tensorboard/summary.py#L507
@@ -139,8 +138,7 @@ class Video:
         scale_factor = Video._calc_scale_factor(video_np)
         video_np = video_np.astype(np.float32)
         video_np = (video_np * scale_factor).astype(np.uint8)
-        video_path = Video._make_video(video_np, fps)
-        return video_path
+        return Video._make_video(video_np, fps)
 
     @staticmethod
     def _make_video(tensor: np.ndarray, fps: Union[float, int]) -> Path:  # type: ignore
@@ -182,7 +180,7 @@ class Video:
 
     @staticmethod
     def _calc_scale_factor(tensor: Union[np.ndarray, "torch.Tensor"]) -> int:  # type: ignore
-        converted = tensor.numpy() if not isinstance(tensor, np.ndarray) else tensor
+        converted = tensor if isinstance(tensor, np.ndarray) else tensor.numpy()
         return 1 if converted.dtype == np.uint8 else 255
 
     @staticmethod
@@ -226,7 +224,7 @@ class Video:
         return video_tensor
 
     @staticmethod
-    def _make_np(x: "torch.Tensor") -> np.ndarray:  # type: ignore
+    def _make_np(x: "torch.Tensor") -> np.ndarray:    # type: ignore
         """
         Args:
           x: An instance of torch tensor
@@ -237,7 +235,7 @@ class Video:
 
         if isinstance(x, torch.Tensor):
             return x.detach().cpu().numpy()
-        raise NotImplementedError("Got {}, but torch tensor expected.".format(type(x)))
+        raise NotImplementedError(f"Got {type(x)}, but torch tensor expected.")
 
     @staticmethod
     def is_video(value: Any) -> bool:
@@ -352,12 +350,9 @@ class Image:
         scale_factor = 1 if img_array.dtype == np.uint8 else 255  # type: ignore
 
         if format == "HW":
-            img = PIL_IMAGE.fromarray(np.uint8(img_array * scale_factor), "L")
-        else:
-            img_array = (img_array * scale_factor).astype(np.uint8)
-            img = PIL_IMAGE.fromarray(img_array)
-
-        return img
+            return PIL_IMAGE.fromarray(np.uint8(img_array * scale_factor), "L")
+        img_array = (img_array * scale_factor).astype(np.uint8)
+        return PIL_IMAGE.fromarray(img_array)
 
 
 @unique

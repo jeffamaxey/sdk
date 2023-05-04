@@ -32,9 +32,11 @@ class GenericExecutionStatusReport(ExecutionStatusReport):
         return ""
 
     def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, GenericExecutionStatusReport):
-            return False
-        return self.message == other.message
+        return (
+            self.message == other.message
+            if isinstance(other, GenericExecutionStatusReport)
+            else False
+        )
 
 
 class PythonExecutionStatusReport(ExecutionStatusReport):
@@ -92,9 +94,11 @@ class PythonExecutionStatusReport(ExecutionStatusReport):
         return string.replace(source_dir + path.sep, "")
 
     def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, PythonExecutionStatusReport):
-            return False
-        return self.message == other.message and self.frames == other.frames
+        return (
+            self.message == other.message and self.frames == other.frames
+            if isinstance(other, PythonExecutionStatusReport)
+            else False
+        )
 
 
 class AssertionFailureStatusReport(ExecutionStatusReport):
@@ -119,9 +123,11 @@ class AssertionFailureStatusReport(ExecutionStatusReport):
         return ""
 
     def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, AssertionFailureStatusReport):
-            return False
-        return self._message == other._message
+        return (
+            self._message == other._message
+            if isinstance(other, AssertionFailureStatusReport)
+            else False
+        )
 
 
 class ExecutionStatusReportFactory:

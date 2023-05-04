@@ -38,8 +38,7 @@ class RayProjectRunner:
                 fabric=definition.fabric,
             )
 
-        run = Run(
+        return Run(
             id=RunId(value=str(uuid.UUID(int=0))),
             project_full_name=self.project_full_name,
-        )  # TODO: Workflow integration with ray to obtain run id.
-        return run
+        )

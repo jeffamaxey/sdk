@@ -138,7 +138,7 @@ class ModelTrainer:
                 assertion.function(model)
             except Exception:
                 failed_assertions.append(assertion)
-        if len(failed_assertions) > 0:
+        if failed_assertions:
             self.tracker.mark_model_failed_assertions(
                 self.train.get_name(), failed_assertions
             )

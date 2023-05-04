@@ -102,11 +102,7 @@ _DYNAMIC_CLASS_TRACKER_LOCK = threading.Lock()
 
 PYPY = platform.python_implementation() == "PyPy"
 
-builtin_code_type = None
-if PYPY:
-    # builtin-code objects only exist in pypy
-    builtin_code_type = type(float.__new__.__code__)
-
+builtin_code_type = type(float.__new__.__code__) if PYPY else None
 _extract_code_globals_cache = weakref.WeakKeyDictionary()
 
 
@@ -277,7 +273,7 @@ def _should_pickle_by_reference(obj, name=None):
         return obj.__name__ in sys.modules
     else:
         raise TypeError(
-            "cannot check importability of {} instances".format(type(obj).__name__)
+            f"cannot check importability of {type(obj).__name__} instances"
         )
 
 
@@ -316,9 +312,7 @@ def _lookup_module_and_qualname(obj, name=None):
     except AttributeError:
         # obj was not found inside the module it points to
         return None
-    if obj2 is not obj:
-        return None
-    return module, name
+    return None if obj2 is not obj else (module, name)
 
 
 def _extract_code_globals(co):
@@ -341,7 +335,7 @@ def _extract_code_globals(co):
         if co.co_consts:
             for const in co.co_consts:
                 if isinstance(const, types.CodeType):
-                    out_names.update(_extract_code_globals(const))
+                    out_names |= _extract_code_globals(const)
 
         _extract_code_globals_cache[co] = out_names
 
@@ -384,7 +378,7 @@ def _find_imported_submodules(code, top_level_dependencies):
             and x.__package__
         ):
             # check if the package has any currently loaded sub-imports
-            prefix = x.__name__ + "."
+            prefix = f"{x.__name__}."
             # A concurrent thread could mutate sys.modules,
             # make sure we iterate over a copy to avoid exceptions
             for name in list(sys.modules):
@@ -507,19 +501,13 @@ HAVE_ARGUMENT = dis.HAVE_ARGUMENT
 EXTENDED_ARG = dis.EXTENDED_ARG
 
 
-_BUILTIN_TYPE_NAMES = {}
-for k, v in types.__dict__.items():
-    if type(v) is type:
-        _BUILTIN_TYPE_NAMES[v] = k
+_BUILTIN_TYPE_NAMES = {
+    v: k for k, v in types.__dict__.items() if type(v) is type
+}
 
 
 def _builtin_type(name):
-    if name == "ClassType":  # pragma: no cover
-        # Backward compat to load pickle files generated with cloudpickle
-        # < 1.3 even if loading pickle files from older versions is not
-        # officially supported.
-        return type
-    return getattr(types, name)
+    return type if name == "ClassType" else getattr(types, name)
 
 
 def _walk_global_ops(code):
@@ -540,7 +528,7 @@ def _extract_class_dict(cls):
     else:
         inherited_dict = {}
         for base in reversed(cls.__bases__):
-            inherited_dict.update(base.__dict__)
+            inherited_dict |= base.__dict__
     to_remove = []
     for name, value in clsdict.items():
         try:
@@ -624,10 +612,7 @@ def parametrized_type_hint_getinitargs(obj):
         initargs = (Tuple, obj.__args__)
     elif type(obj) is type(Callable):
         (*args, result) = obj.__args__
-        if len(args) == 1 and args[0] is Ellipsis:
-            args = Ellipsis
-        else:
-            args = list(args)
+        args = Ellipsis if len(args) == 1 and args[0] is Ellipsis else list(args)
         initargs = (Callable, (args, result))
     else:  # pragma: no cover
         raise pickle.PicklingError(f"Cloudpickle Error: Unknown type {type(obj)}")
@@ -645,10 +630,11 @@ def is_tornado_coroutine(func):
     if "tornado.gen" not in sys.modules:
         return False
     gen = sys.modules["tornado.gen"]
-    if not hasattr(gen, "is_coroutine_function"):
-        # Tornado version is too old
-        return False
-    return gen.is_coroutine_function(func)
+    return (
+        gen.is_coroutine_function(func)
+        if hasattr(gen, "is_coroutine_function")
+        else False
+    )
 
 
 def _rebuild_tornado_coroutine(func):
@@ -791,11 +777,6 @@ def _make_function(code, globals, name, argdefs, closure):
 
 
 def _make_empty_cell():
-    if False:
-        # trick the compiler into creating an empty cell in our lambda
-        cell = None
-        raise AssertionError("this route should not be executed")
-
     return (lambda: cell).__closure__[0]
 
 
@@ -933,11 +914,12 @@ def _typevar_reduce(obj):
     # are not using the _should_pickle_by_reference directly
     module_and_name = _lookup_module_and_qualname(obj, name=obj.__name__)
 
-    if module_and_name is None:
+    if (
+        module_and_name is None
+        or module_and_name is not None
+        and _is_registered_pickle_by_value(module_and_name[0])
+    ):
         return (_make_typevar, _decompose_typevar(obj))
-    elif _is_registered_pickle_by_value(module_and_name[0]):
-        return (_make_typevar, _decompose_typevar(obj))
-
     return (getattr, module_and_name)
 
 
@@ -966,11 +948,8 @@ def _make_dict_values(obj, is_ordered=False):
     if is_ordered:
         return OrderedDict((i, _) for i, _ in enumerate(obj)).values()
     else:
-        return {i: _ for i, _ in enumerate(obj)}.values()
+        return dict(enumerate(obj)).values()
 
 
 def _make_dict_items(obj, is_ordered=False):
-    if is_ordered:
-        return OrderedDict(obj).items()
-    else:
-        return obj.items()
+    return OrderedDict(obj).items() if is_ordered else obj.items()

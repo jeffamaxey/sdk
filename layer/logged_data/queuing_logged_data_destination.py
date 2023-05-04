@@ -64,11 +64,7 @@ class QueueingLoggedDataDestination(LoggedDataDestination):
             if self._reading_thread.is_alive():
                 # this means that there is some active logging request that is being executed for more than
                 # LOGGING_TIMEOUT
-                self._sending_errors = (
-                    self._sending_errors + f"Requested data could not be logged within "
-                    f"{LOGGING_TIMEOUT}s after finished execution,"
-                    f" giving up.\n"
-                )
+                self._sending_errors = f"{self._sending_errors}Requested data could not be logged within {LOGGING_TIMEOUT}s after finished execution, giving up.\n"
             else:  # in the case the thread was stopped, but there is still something unprocessed in the qeueue
                 self._flush_queue()
             self._files_storage.close()
@@ -96,4 +92,4 @@ class QueueingLoggedDataDestination(LoggedDataDestination):
         return
 
     def _append_to_error_message(self, ex: Exception) -> None:
-        self._sending_errors = self._sending_errors + f"Exception: {ex}\n"
+        self._sending_errors = f"{self._sending_errors}Exception: {ex}\n"

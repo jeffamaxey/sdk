@@ -111,12 +111,11 @@ class DataCatalogClient:
         except DatasetClientError as e:
             raise LayerClientException(str(e))
 
-        if len(all_partition_data) > 0:
-            df = pandas.concat(all_partition_data, ignore_index=True)
-        else:
-            df = pandas.DataFrame()
-
-        return df
+        return (
+            pandas.concat(all_partition_data, ignore_index=True)
+            if all_partition_data
+            else pandas.DataFrame()
+        )
 
     def _get_dataset_writer(self, build_id: uuid.UUID, schema: Any) -> Any:
         dataset_snapshot = DatasetSnapshot(build_id=DatasetBuildId(value=str(build_id)))
@@ -207,7 +206,7 @@ class DataCatalogClient:
             )
             failure = None
 
-        resp = self._service.CompleteBuild(
+        return self._service.CompleteBuild(
             CompleteBuildRequest(
                 id=DatasetBuildId(value=str(dataset_build_id)),
                 status=status,
@@ -215,8 +214,6 @@ class DataCatalogClient:
                 failure=failure,
             )
         )
-
-        return resp
 
     def add_dataset(
         self,

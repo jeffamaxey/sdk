@@ -48,22 +48,20 @@ class RayClientFunctionRuntime(BaseFunctionRuntime):
                 dependencies.append("pip")
                 dependencies.append({"pip": ["layer"]})
                 environment["dependencies"] = dependencies
+            elif pip_dict := next(
+                (
+                    item
+                    for item in dependencies
+                    if isinstance(item, dict) and "pip" in item
+                ),
+                {},
+            ):
+                pip_dict["pip"].append("layer")
             else:
-                pip_dict: Dict[str, Any] = next(
-                    (
-                        item
-                        for item in dependencies
-                        if isinstance(item, dict) and "pip" in item
-                    ),
-                    {},
-                )
-                if pip_dict:
-                    pip_dict["pip"].append("layer")
-                else:
-                    pip_dict["pip"] = ["layer"]
+                pip_dict["pip"] = ["layer"]
             runtime_env["conda"] = environment
         else:
-            runtime_env["pip"] = ["layer", *[p for p in package_info.pip_dependencies]]
+            runtime_env["pip"] = ["layer", *list(package_info.pip_dependencies)]
 
         print(f"Connecting to the Ray instance at {self._address}")
         self._client = ray.init(

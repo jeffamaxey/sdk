@@ -78,11 +78,7 @@ def test_even_when_reading_thread_terminated_then_queue_flushed() -> None:
             idle_thread.join(1.0)  # wait a moment for fake reading thread to terminate
             assert idle_thread.is_alive() is False
             destination.receive(queued_ok_execution)
-            assert execution_happened is False
+            assert not execution_happened
 
-    assert (
-        mock_thread_used_as_reading_thread is True
-    )  # make sure we used fake thread and not having false positive
-    assert (
-        execution_happened is True
-    )  # make sure that request was executed anyway upon __exit__ of the destination
+    assert mock_thread_used_as_reading_thread
+    assert execution_happened

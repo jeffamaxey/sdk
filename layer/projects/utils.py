@@ -17,12 +17,12 @@ _PROJECT_NAME_PATTERN = re.compile(r"^(([a-zA-Z0-9_-]+)\/)?([a-zA-Z0-9_-]+)$")
 def verify_project_exists_and_retrieve_project_id(
     client: LayerClient, project_full_name: ProjectFullName
 ) -> UUID:
-    project = client.project_service_client.get_project(project_full_name)
-    if not project:
+    if project := client.project_service_client.get_project(project_full_name):
+        return project.id
+    else:
         raise ProjectInitializationException(
             f"Project '{project_full_name.path}' does not exist."
         )
-    return project.id
 
 
 def get_or_create_remote_project(
@@ -38,13 +38,13 @@ def get_or_create_remote_project(
 
 
 def get_current_project_full_name() -> ProjectFullName:
-    project_full_name = current_project_full_name()
-    if not project_full_name:
+    if project_full_name := current_project_full_name():
+        return project_full_name
+    else:
         raise ProjectInitializationException(
             "Please specify the current project name globally with"
             " 'layer.init(\"account-name/project-name\")' or 'layer.init(\"project-name\")'"
         )
-    return project_full_name
 
 
 def validate_project_name(project_name: str) -> None:

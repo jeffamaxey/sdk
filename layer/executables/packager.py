@@ -117,8 +117,7 @@ def _copy_cloudpickle_package(target_path: Path) -> None:
     source_path = Path(cloudpickle.__file__).resolve().parent
 
     def _package_contents() -> Generator[str, None, None]:
-        for module_file in glob.iglob(f"{source_path}{os.sep}*.py"):
-            yield module_file
+        yield from glob.iglob(f"{source_path}{os.sep}*.py")
         yield str(source_path / "LICENSE")
 
     cloudpickle_dir = target_path / "cloudpickle"
@@ -192,20 +191,17 @@ def _loader_source() -> str:
         # cloudpickle is included in the executable
         import cloudpickle
 
-        def _get_function_runtime():  # type: ignore
+        def _get_function_runtime():    # type: ignore
             """Load the function runtime from the globals dictionary.
             If none is provided, load the default runtime, which calls the function directly."""
 
-            # check for the runtime being provided from the outside
             if "__function_runtime" in globals():
                 return __function_runtime  # type: ignore # noqa: F821 # pylint: disable=undefined-variable
-            else:
+            # return the default runtime, which calls the function directly
+            def _execute_function(function):  # type: ignore
+                return function()
 
-                # return the default runtime, which calls the function directly
-                def _execute_function(function):  # type: ignore
-                    return function()
-
-                return _execute_function
+            return _execute_function
 
         def _extract_resources(exec):  # type: ignore
             """Extracts resources from the executable."""

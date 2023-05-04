@@ -63,13 +63,12 @@ class Project:
         return replace(self, account=account)
 
     def __str__(self) -> str:
-        if self.account:
-            from layer.config import DEFAULT_PATH, ConfigManager
-
-            config = ConfigManager(DEFAULT_PATH).load()
-            return f"Your Layer project is here: {config.url}/{self.account.name}/{self.name}"
-        else:
+        if not self.account:
             return f"Project({self.name})"
+        from layer.config import DEFAULT_PATH, ConfigManager
+
+        config = ConfigManager(DEFAULT_PATH).load()
+        return f"Your Layer project is here: {config.url}/{self.account.name}/{self.name}"
 
     def __repr__(self) -> str:
         return self.__str__()

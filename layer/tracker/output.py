@@ -51,12 +51,11 @@ class SpinnerColumn(ProgressColumn):
         self.spinner = Spinner(spinner_name, style=spinner_style, speed=speed)
 
     def render(self, task: Task) -> RenderableType:
-        text = (
+        return (
             self.finished_text
             if task.finished
             else self.spinner.render(task.get_time())
         )
-        return text
 
 
 def get_progress_ui() -> Progress:

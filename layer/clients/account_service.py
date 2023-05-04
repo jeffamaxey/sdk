@@ -89,10 +89,9 @@ class AccountServiceClient:
         )
         acc: PbAccount = resp.account
         created_date: layerapi.api.value.date_pb2.Date = acc.created_date
-        date = datetime.datetime(
+        return datetime.datetime(
             created_date.year_month.year,
             created_date.year_month.month,
             created_date.day,
             tzinfo=datetime.timezone.utc,
         )
-        return date

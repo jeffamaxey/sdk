@@ -78,10 +78,7 @@ class _ImageDtype(ExtensionDtype):
         return Image
 
     def __from_arrow__(self, array: Union[pa.Array, pa.ChunkedArray]) -> "Images":
-        if isinstance(array, pa.Array):
-            chunks = array
-        else:
-            chunks = array.chunks
+        chunks = array if isinstance(array, pa.Array) else array.chunks
         images = (_load_image(binary) for chunk in chunks for binary in chunk)
         return Images(tuple(images))
 
@@ -197,21 +194,11 @@ class Images(ExtensionArray):
 
     @property
     def nbytes(self) -> int:
-        total_bytes = 0
-        for buf in self._images_byte_arr():
-            total_bytes += len(buf)
-        return total_bytes
+        return sum(len(buf) for buf in self._images_byte_arr())
 
-    def value_counts(
-        values: Sequence[Any],
-        sort: bool = True,
-        ascending: bool = False,
-        normalize: bool = False,
-        bins: Any = None,
-        dropna: bool = True,
-    ) -> pd.Series:  # type: ignore
+    def value_counts(self, sort: bool = True, ascending: bool = False, normalize: bool = False, bins: Any = None, dropna: bool = True) -> pd.Series:  # type: ignore
         # make all values unique for now
-        return pd.Series(np.ones(len(values), dtype=np.int64))
+        return pd.Series(np.ones(len(self), dtype=np.int64))
 
 
 def _image_bytes(image: "Image") -> bytes:
@@ -261,10 +248,7 @@ class _ArrayDtype(ExtensionDtype):
         return np.ndarray
 
     def __from_arrow__(self, array: Union[pa.Array, pa.ChunkedArray]) -> "Arrays":
-        if isinstance(array, pa.Array):
-            chunks = array
-        else:
-            chunks = array.chunks
+        chunks = array if isinstance(array, pa.Array) else array.chunks
         arrays = (_load_array(binary) for chunk in chunks for binary in chunk)
         return Arrays(tuple(arrays))
 
@@ -352,21 +336,11 @@ class Arrays(ExtensionArray):
 
     @property
     def nbytes(self) -> int:
-        total_bytes = 0
-        for arr in self._arrays:
-            total_bytes += arr.nbytes
-        return total_bytes
+        return sum(arr.nbytes for arr in self._arrays)
 
-    def value_counts(
-        values: Sequence[Any],
-        sort: bool = True,
-        ascending: bool = False,
-        normalize: bool = False,
-        bins: Any = None,
-        dropna: bool = True,
-    ) -> pd.Series:  # type: ignore
+    def value_counts(self, sort: bool = True, ascending: bool = False, normalize: bool = False, bins: Any = None, dropna: bool = True) -> pd.Series:  # type: ignore
         # make all values unique for now
-        return pd.Series(np.ones(len(values), dtype=np.int64))
+        return pd.Series(np.ones(len(self), dtype=np.int64))
 
 
 def _array_bytes(arr: np.ndarray) -> bytes:  # type: ignore

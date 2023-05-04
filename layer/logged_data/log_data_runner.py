@@ -83,7 +83,6 @@ class LogDataRunner:
                     type=LoggedDataType.LOGGED_DATA_TYPE_TEXT,
                     **kwargs,
                 )
-            # boolean check must be done before numeric check as it also returns true for booleans.
             elif isinstance(value, bool):
                 self._log_simple_data(
                     value=str(value),
@@ -92,12 +91,10 @@ class LogDataRunner:
                 )
             elif isinstance(value, (int, float)):
                 if x_coordinate is not None:
-                    kwargs.update(
-                        {
-                            "x_coordinate": x_coordinate,
-                            "x_coordinate_type": x_coordinate_type,
-                        }
-                    )
+                    kwargs |= {
+                        "x_coordinate": x_coordinate,
+                        "x_coordinate_type": x_coordinate_type,
+                    }
                 self._log_simple_data(
                     value=str(value),
                     type=LoggedDataType.LOGGED_DATA_TYPE_NUMBER,
@@ -125,12 +122,10 @@ class LogDataRunner:
                 self._log_video_from_path(path=video_path, **kwargs)
             elif Image.is_image(value):
                 if x_coordinate is not None:
-                    kwargs.update(
-                        {
-                            "x_coordinate": x_coordinate,
-                            "x_coordinate_type": x_coordinate_type,
-                        }
-                    )
+                    kwargs |= {
+                        "x_coordinate": x_coordinate,
+                        "x_coordinate_type": x_coordinate_type,
+                    }
                 if TYPE_CHECKING:
                     import PIL
 
@@ -207,7 +202,7 @@ class LogDataRunner:
             if TYPE_CHECKING:
                 import PIL
 
-                assert isinstance(image, Path) or isinstance(image, PIL.Image.Image)
+                assert isinstance(image, (Path, PIL.Image.Image))
             img = image
 
         if Image.is_image_path(img):
@@ -285,11 +280,12 @@ class LogDataRunner:
 
     @staticmethod
     def _check_x_coordinate(x_coordinate: Any) -> None:
-        if x_coordinate is not None:
-            if not isinstance(x_coordinate, int) or x_coordinate < 0:
-                raise ValueError(
-                    f"x_coordinate can only be a non-negative integer, given value: {x_coordinate}"
-                )
+        if x_coordinate is not None and (
+            not isinstance(x_coordinate, int) or x_coordinate < 0
+        ):
+            raise ValueError(
+                f"x_coordinate can only be a non-negative integer, given value: {x_coordinate}"
+            )
 
     @staticmethod
     def _convert_dict_to_dataframe(dictionary: Dict[str, Any]) -> pd.DataFrame:
@@ -305,14 +301,11 @@ class LogDataRunner:
 
     @staticmethod
     def _is_tabular_dict(maybe_dict: Any) -> bool:
-        if not isinstance(maybe_dict, dict):
-            return False
-
-        for key in maybe_dict:
-            if not isinstance(key, str):
-                return False
-
-        return True
+        return (
+            all(isinstance(key, str) for key in maybe_dict)
+            if isinstance(maybe_dict, dict)
+            else False
+        )
 
     @staticmethod
     def _is_video_from_path(value: Any) -> bool:
@@ -333,7 +326,7 @@ class LogDataRunner:
     def _is_pyplot(value: Any) -> bool:
         return (
             hasattr(value, "__name__")
-            and "matplotlib.pyplot" == value.__name__
+            and value.__name__ == "matplotlib.pyplot"
             and isinstance(value, ModuleType)
         )
 

@@ -98,8 +98,7 @@ class UIRunProgressTracker(RunProgressTracker):
 
     def _get_asset(self, asset_type: AssetType, asset_name: str) -> AssetTracker:
         task = self._get_or_create_task(asset_type, asset_name)
-        asset = task.fields["asset"]
-        return asset
+        return task.fields["asset"]
 
     def _update_asset(
         self,
@@ -477,10 +476,10 @@ class UIRunProgressTracker(RunProgressTracker):
             AssetType.MODEL,
             name,
             asset_download_transfer_state=state,
-            status=AssetTrackerStatus.ASSET_DOWNLOADING
-            if not from_cache
-            else AssetTrackerStatus.ASSET_FROM_CACHE,
-            loading_cache_asset=None if not from_cache else getting_asset_name,
+            status=AssetTrackerStatus.ASSET_FROM_CACHE
+            if from_cache
+            else AssetTrackerStatus.ASSET_DOWNLOADING,
+            loading_cache_asset=getting_asset_name if from_cache else None,
         )
 
     def mark_model_getting_dataset(
@@ -489,11 +488,13 @@ class UIRunProgressTracker(RunProgressTracker):
         self._update_asset(
             AssetType.MODEL,
             name,
-            asset_download_transfer_state=DatasetTransferState(0, getting_asset_name),
-            status=AssetTrackerStatus.ASSET_DOWNLOADING
-            if not from_cache
-            else AssetTrackerStatus.ASSET_FROM_CACHE,
-            loading_cache_asset=None if not from_cache else getting_asset_name,
+            asset_download_transfer_state=DatasetTransferState(
+                0, getting_asset_name
+            ),
+            status=AssetTrackerStatus.ASSET_FROM_CACHE
+            if from_cache
+            else AssetTrackerStatus.ASSET_DOWNLOADING,
+            loading_cache_asset=getting_asset_name if from_cache else None,
         )
 
     def mark_dataset_getting_model(
@@ -507,10 +508,10 @@ class UIRunProgressTracker(RunProgressTracker):
             AssetType.DATASET,
             name,
             asset_download_transfer_state=state,
-            status=AssetTrackerStatus.ASSET_DOWNLOADING
-            if not from_cache
-            else AssetTrackerStatus.ASSET_FROM_CACHE,
-            loading_cache_asset=None if not from_cache else getting_asset_name,
+            status=AssetTrackerStatus.ASSET_FROM_CACHE
+            if from_cache
+            else AssetTrackerStatus.ASSET_DOWNLOADING,
+            loading_cache_asset=getting_asset_name if from_cache else None,
         )
 
     def mark_dataset_getting_dataset(
@@ -519,11 +520,13 @@ class UIRunProgressTracker(RunProgressTracker):
         self._update_asset(
             AssetType.DATASET,
             name,
-            asset_download_transfer_state=DatasetTransferState(0, getting_asset_name),
-            status=AssetTrackerStatus.ASSET_DOWNLOADING
-            if not from_cache
-            else AssetTrackerStatus.ASSET_FROM_CACHE,
-            loading_cache_asset=None if not from_cache else getting_asset_name,
+            asset_download_transfer_state=DatasetTransferState(
+                0, getting_asset_name
+            ),
+            status=AssetTrackerStatus.ASSET_FROM_CACHE
+            if from_cache
+            else AssetTrackerStatus.ASSET_DOWNLOADING,
+            loading_cache_asset=getting_asset_name if from_cache else None,
         )
 
     def mark_model_loaded(

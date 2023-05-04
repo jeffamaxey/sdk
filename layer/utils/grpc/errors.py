@@ -6,11 +6,10 @@ from layer.exceptions.exceptions import LayerClientException
 
 
 def _try_parse_grpc_debug_context(message: str) -> Optional[Dict[str, Any]]:
-    json_expr = re.search(r"\s({.*?})$", message)
-    if json_expr:
+    if json_expr := re.search(r"\s({.*?})$", message):
         # NOTE: the replace call below is needed to mitigate a bug in gRPC on
         # Windows where backslashes in paths "file":"C:\\..." go unescaped
-        json_context = json_expr.group(1).replace("\\", "\\\\")
+        json_context = json_expr[1].replace("\\", "\\\\")
         try:
             return json.loads(json_context)
         except ValueError:
@@ -23,8 +22,7 @@ def generate_client_error_from_grpc_error(
 ) -> LayerClientException:
     if isinstance(err, LayerClientException):
         return err
-    context = _try_parse_grpc_debug_context(str(err))
-    if context:
+    if context := _try_parse_grpc_debug_context(str(err)):
         grpc_message = context.get("grpc_message")
         if grpc_message is not None:
             return LayerClientException(grpc_message)

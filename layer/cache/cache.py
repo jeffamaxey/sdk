@@ -42,9 +42,7 @@ class Cache:
         if not key:
             return None
         key_path = self._cache_dir / key
-        if key_path.exists():
-            return key_path
-        return None
+        return key_path if key_path.exists() else None
 
     def clear(self) -> None:
         if self._cache_dir.exists():

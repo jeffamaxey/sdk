@@ -137,20 +137,15 @@ class CGroupsMetricsCollectorVersionedV2(CGroupsMetricsCollectorVersioned):
         cpu_usage = str(self._read_cgroup_metric("user.slice/cpu.stat"))
         regex = r"user_usec (\d*)\n"
         extracted_cpu_usage = re.search(regex, cpu_usage)
-        if extracted_cpu_usage is None:
-            return 0
-        else:
-            # Time in microseconds, converting to nanoseconds
-            return int(extracted_cpu_usage.group(1)) * 1000
+        return 0 if extracted_cpu_usage is None else int(extracted_cpu_usage[1]) * 1000
 
     def get_cpu_available(self) -> float:
         max_cpu = str(self._read_cgroup_metric("user.slice/cpu.max"))
         cpu_quota = max_cpu.split()[0]
-        cpu_period = max_cpu.split()[1]
         if str(cpu_quota) == "max":
             return 1
-        else:
-            return float(int(cpu_quota) / int(cpu_period))
+        cpu_period = max_cpu.split()[1]
+        return float(int(cpu_quota) / int(cpu_period))
 
     def get_mem_used(self) -> int:
         return int(self._read_cgroup_metric("user.slice/memory.current"))
@@ -229,14 +224,13 @@ def _get_cgroup_version() -> CGroupsVersion:
     partitions = [
         p for p in psutil.disk_partitions(all=True) if p.mountpoint == path.__str__()
     ]
-    if len(partitions) == 1:
-        cgroup_mount_type = partitions[0].fstype
-        if cgroup_mount_type == "tmpfs":
-            return CGroupsVersion.V1
-        elif cgroup_mount_type == "cgroup2":
-            return CGroupsVersion.V2
-        else:
-            return CGroupsVersion.UNKNOWN
+    if len(partitions) != 1:
+        return CGroupsVersion.UNKNOWN
+    cgroup_mount_type = partitions[0].fstype
+    if cgroup_mount_type == "cgroup2":
+        return CGroupsVersion.V2
+    elif cgroup_mount_type == "tmpfs":
+        return CGroupsVersion.V1
     else:
         return CGroupsVersion.UNKNOWN
 
@@ -334,9 +328,8 @@ class SystemMetrics:
         # ensure that short runs still get at least a couple of data points by polling
         # more frequently in the beginning
         if self._elapsed_seconds < 15:
-            step = 1
+            return 1
         elif self._elapsed_seconds < 60:
-            step = 5
+            return 5
         else:
-            step = 15
-        return step
+            return 15

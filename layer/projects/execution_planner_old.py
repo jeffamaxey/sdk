@@ -95,8 +95,7 @@ def build_execution_plan(definitions: Sequence[FunctionDefinition]) -> Execution
                 )
             else:
                 raise LayerClientException(f"Unknown operation type. {operation}")
-    execution_plan = ExecutionPlan(operations=operations)
-    return execution_plan
+    return ExecutionPlan(operations=operations)
 
 
 def check_asset_dependencies(definitions: Sequence[FunctionDefinition]) -> None:

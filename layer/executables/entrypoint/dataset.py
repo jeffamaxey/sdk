@@ -162,7 +162,7 @@ def _run_assertions(
             assertion.function(result)
         except Exception:
             failed_assertions.append(assertion)
-    if len(failed_assertions) > 0:
+    if failed_assertions:
         tracker.mark_dataset_failed_assertions(asset_name, failed_assertions)
         raise Exception(f"Failed assertions {failed_assertions}\n")
     else:

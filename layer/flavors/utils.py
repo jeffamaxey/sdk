@@ -44,11 +44,14 @@ PROTO_TO_PYTHON_OBJECT_FLAVORS: Dict["PbModelFlavor.ValueType", ModelFlavor] = {
 
 
 def get_flavor_for_model(model_object: ModelObject) -> Optional[ModelFlavor]:
-    matching_flavor: Optional[ModelFlavor] = None
-    for flavor in PYTHON_FLAVORS:
-        if flavor.can_interpret_object(model_object):
-            matching_flavor = flavor
-            break
+    matching_flavor: Optional[ModelFlavor] = next(
+        (
+            flavor
+            for flavor in PYTHON_FLAVORS
+            if flavor.can_interpret_object(model_object)
+        ),
+        None,
+    )
     return matching_flavor
 
 

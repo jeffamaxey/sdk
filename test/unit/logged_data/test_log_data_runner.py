@@ -457,12 +457,10 @@ def test_log_data(
         "category": category,
     }
     if x_coordinate_type and x_coordinate_type != XCoordinateType.INVALID:
-        log_kwargs.update(
-            {
-                "x_coordinate": 123,
-                "x_coordinate_type": x_coordinate_type,
-            }
-        )
+        log_kwargs |= {
+            "x_coordinate": 123,
+            "x_coordinate_type": x_coordinate_type,
+        }
 
     # when
     runner.log(data, **log_kwargs)

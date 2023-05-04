@@ -137,9 +137,8 @@ class ConfigManager:
             config = await config_client.get_config()
 
         creds = Credentials(access_token=access_token, refresh_token="")
-        if config.auth.is_enabled:
-            if creds.is_access_token_expired:
-                raise UserAccessTokenExpiredError()
+        if config.auth.is_enabled and creds.is_access_token_expired:
+            raise UserAccessTokenExpiredError()
 
         config = config.with_credentials(creds)
         config = replace(config, is_guest=config_is_guest)
